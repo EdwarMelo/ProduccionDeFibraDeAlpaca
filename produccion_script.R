@@ -9,11 +9,10 @@
 getwd()
 setwd("D:/TESIS/git/backup_git")
 
-
-data <- read.csv("data_ts.xlsx")
+library(readxl)
+data <- read_excel("data_ts.xlsx")
 write.csv(data, file="data_ts.csv")
-
-help(write.csv)
+dataset <- read.csv("data_ts.csv")
 
 # Se carga los datos de series temporales
 
