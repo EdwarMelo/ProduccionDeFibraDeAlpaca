@@ -43,6 +43,9 @@ data$x3 <- log(data$empleo) # Empleo agricola - Trabajo
 data$c1 <- log(data$precipitacion) # Precipitacion Acumulada Agregada
 data$c2 <- log(data$temperatura) # Temperatura Media
 
+#### Estadisticos Descriptivos ####
+summary(data)
+
 #### Transformacion del dataset en formato de series temporales ####
 tsdata <- ts(data, start = 1992, end = 2022, frequency = 1)
 
@@ -128,7 +131,16 @@ modelo2 <- dynlm(d(y) ~ L(d(y)) + d(x1) + d(x2) + d(x3) + d(c1) + d(c2) +
                    trend(tsdata), data = tsdata)
 modelo2 %>% summary()
 res2 <- resid(modelo2)
+# ---
+modelo2 <- dynlm(d(y) ~ d(x1) + d(x2) + d(x3) + d(c1) + d(c2) + 
+                   trend(tsdata), data = tsdata)
+modelo2 %>% summary()
+res2 <- resid(modelo2)
 # Se genera el modelo de correcion de error (corto plazo)
-mce <- dynlm(d(y) ~ L(d(y)) + d(x1) + d(x2) + d(x3) + d(c1) + d(c2) + 
+mce1 <- dynlm(d(y) ~ d(x1) + d(x2) + d(x3) + d(c1) + d(c2) + 
+                trend(tsdata) + L(res2), data = tsdata)
+summary(mce1)
+# ---
+mce2 <- dynlm(d(y) ~ L(d(y)) + d(x1) + d(x2) + d(x3) + d(c1) + d(c2) + 
                trend(tsdata) + L(res2), data = tsdata)
-summary(mce)
+summary(mce2)
