@@ -39,6 +39,8 @@ library(AICcmodavg)
 library(slider)
 library(TTR)
 library(knitr)
+library(fUnitRoots)
+library(ggpubr)
 
 #### Se carga el dataset desde el repositorio de GitHub ####
 datos <- read.csv("https://raw.githubusercontent.com/EdwarMelo/ProduccionDeFibraDeAlpaca/refs/heads/main/data_ts.csv",
@@ -74,95 +76,68 @@ plot.ts(df1, plot.type = "multiple",
 # Suavizado por Medias Moviles y su Cambio Porcentual
 fecha <- as.Date(datos$tiempo, format = "%Y")
 prod <- datos$produccion
-am_prod <- SMA(datos$produccion, n=5) # Media Movil de la Produccion
-prod_cambio <- abs((datos$produccion-am_prod)/(am_prod))*100 # Variacion % de
-              # la Produccion con respecto a su Media Movil
 nat <- datos$pastizales
-am_nat <- SMA(datos$pastizales, n=5) # Media Movil de la Naturaleza
-nat_cambio <- abs((datos$pastizales-am_nat)/(am_nat))*100 # Variacion % de
-              # la Naturaleza con respecto a su Media Movil
 cap <- datos$alpacas
-am_cap <- SMA(datos$alpacas, n=5) # Media Movil del capital
-cap_cambio <- abs((datos$alpacas-am_cap)/(am_cap))*100 # Variacion % del
-              # Capital con respecto a su Media Movil
 trab <- datos$empleo
-am_trab <- SMA(datos$empleo, n=5) # Media Movil del trabajo
-trab_cambio <- abs((datos$empleo-am_trab)/(am_trab))*100 # Variacion % del
-              # Trabajo con respecto a su Media Movil
 prec <- datos$precipitacion
-am_prec <- SMA(datos$precipitacion, n=5) # Media Movil de la Precipitacion
-prec_cambio <- abs((datos$precipitacion-am_prec)/(am_prec))*100 # Variacion % de
-              # la Precipitacion con respecto a su Media Movil
 temp <- datos$temperatura
-am_temp <- SMA(datos$temperatura, n=5) # Media Movil de la Temperatura
-temp_cambio <- abs((datos$temperatura-am_temp)/(am_temp))*100 # Variacion % de
-              # la Precipitacion con respecto a su Media Movil
-am_data <- data.frame(fecha,prod,am_prod,prod_cambio,nat,am_nat,nat_cambio,
-                      cap,am_cap,cap_cambio,trab,am_trab,trab_cambio,
-                      prec,am_prec,prec_cambio,temp,am_temp,temp_cambio) 
-                      # DataFrame de Medias Moviles y Cambios Porcentuales
+df2 <- data.frame(fecha,prod,nat,cap,trab,prec,temp) # DataFrame de Medias Moviles y Cambios Porcentuales
 # Graficos del Comportamiento de las Variables/Dimensiones y sus Medias Moviles
 # Produccion
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = prod, color = "Producción")) +
-  geom_line(aes(y = am_prod, color = "Media Movil")) +
-  scale_color_manual(values = c("Producción" = "darkblue", 
-                                "Media Movil" = "red")) +
+  geom_line(aes(y = SMA(prod, n=5), color = "Media Movil")) +
+  scale_color_manual(values = c("Producción" = "darkblue","Media Movil" = "red")) +
   labs(title = "Producción de Fibra de Alpaca (Periodo 1992-2022)",
        x = "Periodo",
        y = "Producción (t)",
        color = "Referencia") + 
   theme_minimal()
 # Naturaleza
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = nat, color = "Naturaleza")) +
-  geom_line(aes(y = am_nat, color = "Media Movil")) +
-  scale_color_manual(values = c("Naturaleza" = "darkblue", 
-                                "Media Movil" = "red")) +
+  geom_line(aes(y = SMA(nat, n=5), color = "Media Movil")) +
+  scale_color_manual(values = c("Naturaleza" = "darkblue","Media Movil" = "red")) +
   labs(title = "Comportamiento de la Naturaleza (Periodo 1992-2022)",
        x = "Periodo",
        y = "Naturaleza (Mha)",
        color = "Referencia") + 
   theme_minimal()
 # Capital
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = cap, color = "Capital")) +
-  geom_line(aes(y = am_cap, color = "Media Movil")) +
-  scale_color_manual(values = c("Capital" = "darkblue", 
-                                "Media Movil" = "red")) +
+  geom_line(aes(y = SMA(cap, n=5), color = "Media Movil")) +
+  scale_color_manual(values = c("Capital" = "darkblue","Media Movil" = "red")) +
   labs(title = "Comportamiento del Capital (Periodo 1992-2022)",
        x = "Periodo",
        y = "Capital (M)",
        color = "Referencia") + 
   theme_minimal()
 # Trabajo
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = trab, color = "Trabajo")) +
-  geom_line(aes(y = am_trab, color = "Media Movil")) +
-  scale_color_manual(values = c("Trabajo" = "darkblue", 
-                                "Media Movil" = "red")) +
+  geom_line(aes(y = SMA(trab, n=5), color = "Media Movil")) +
+  scale_color_manual(values = c("Trabajo" = "darkblue","Media Movil" = "red")) +
   labs(title = "Comportamiento del Trabajo (Periodo 1992-2022)",
        x = "Periodo",
        y = "Trabajo (M)",
        color = "Referencia") + 
   theme_minimal()
 # Precipitacion
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = prec, color = "Precipitacion")) +
-  geom_line(aes(y = am_prec, color = "Media Movil")) +
-  scale_color_manual(values = c("Precipitacion" = "darkblue", 
-                                "Media Movil" = "red")) +
+  geom_line(aes(y = SMA(prec, n=5), color = "Media Movil")) +
+  scale_color_manual(values = c("Precipitacion" = "darkblue","Media Movil" = "red")) +
   labs(title = "Comportamiento de la Precipitacion (Periodo 1992-2022)",
        x = "Periodo",
        y = "Precipitacion (mm)",
        color = "Referencia") + 
   theme_minimal()
 # Temperatura
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = temp, color = "Temperatura")) +
-  geom_line(aes(y = am_temp, color = "Media Movil")) +
-  scale_color_manual(values = c("Temperatura" = "darkblue", 
-                                "Media Movil" = "red")) +
+  geom_line(aes(y = SMA(temp, n=5), color = "Media Movil")) +
+  scale_color_manual(values = c("Temperatura" = "darkblue","Media Movil" = "red")) +
   labs(title = "Comportamiento de la Temperatura (Periodo 1992-2022)",
        x = "Periodo",
        y = "Temperatura (°C)",
@@ -171,9 +146,9 @@ ggplot(am_data, aes(x = fecha)) +
 # Graficos de la Variacion porcentual de las Variables/Dimensiones con respecto 
 # a sus Medias Moviles
 # Produccion
-ggplot(am_data, aes(x = fecha)) +
-  geom_line(aes(y = prod_cambio, color = "Variacion Porcentual de la Produccion")) +
-  geom_line(aes(y = mean(prod_cambio, na.rm = T), color = "Promedio de la Media Movil")) +
+ggplot(df2, aes(x = fecha)) +
+  geom_line(aes(y = abs((prod-SMA(prod, n=5))/(SMA(prod, n=5)))*100, color = "Variacion Porcentual de la Produccion")) +
+  geom_line(aes(y = mean(abs((prod-SMA(prod, n=5))/(SMA(prod, n=5)))*100, na.rm = T), color = "Promedio de la Media Movil")) +
   scale_color_manual(values = c("Variacion Porcentual de la Produccion" = "violetred3",
                                 "Promedio de la Media Movil" = "green3")) +
   labs(title = "Variacion Porcentual de la Produccion con respecto a su Media Movil (Periodo 1992-2022)",
@@ -182,9 +157,9 @@ ggplot(am_data, aes(x = fecha)) +
        color = "Referencia") + 
   theme_minimal()
 # Naturaleza
-ggplot(am_data, aes(x = fecha)) +
-  geom_line(aes(y = nat_cambio, color = "Variacion Porcentual de la Naturaleza")) +
-  geom_line(aes(y = mean(nat_cambio, na.rm = T), color = "Promedio de la Media Movil")) +
+ggplot(df2, aes(x = fecha)) +
+  geom_line(aes(y = abs((nat-SMA(nat, n=5))/(SMA(nat, n=5)))*100, color = "Variacion Porcentual de la Naturaleza")) +
+  geom_line(aes(y = mean(abs((nat-SMA(nat, n=5))/(SMA(nat, n=5)))*100, na.rm = T), color = "Promedio de la Media Movil")) +
   scale_color_manual(values = c("Variacion Porcentual de la Naturaleza" = "violetred3",
                                 "Promedio de la Media Movil" = "green3")) +
   labs(title = "Variacion Porcentual de la Naturaleza con respecto a su Media Movil (Periodo 1992-2022)",
@@ -193,9 +168,9 @@ ggplot(am_data, aes(x = fecha)) +
        color = "Referencia") + 
   theme_minimal()
 # Capital
-ggplot(am_data, aes(x = fecha)) +
-  geom_line(aes(y = cap_cambio, color = "Variacion Porcentual del Capital")) +
-  geom_line(aes(y = mean(cap_cambio, na.rm = T), color = "Promedio de la Media Movil")) +
+ggplot(df2, aes(x = fecha)) +
+  geom_line(aes(y = abs((cap-SMA(cap, n=5))/(SMA(cap, n=5)))*100, color = "Variacion Porcentual del Capital")) +
+  geom_line(aes(y = mean(abs((cap-SMA(cap, n=5))/(SMA(cap, n=5)))*100, na.rm = T), color = "Promedio de la Media Movil")) +
   scale_color_manual(values = c("Variacion Porcentual del Capital" = "violetred3",
                                 "Promedio de la Media Movil" = "green3")) +
   labs(title = "Variacion Porcentual del Capital con respecto a su Media Movil (Periodo 1992-2022)",
@@ -204,9 +179,9 @@ ggplot(am_data, aes(x = fecha)) +
        color = "Referencia") + 
   theme_minimal()
 # Trabajo
-ggplot(am_data, aes(x = fecha)) +
-  geom_line(aes(y = trab_cambio, color = "Variacion Porcentual del Trabajo")) +
-  geom_line(aes(y = mean(trab_cambio, na.rm = T), color = "Promedio de la Media Movil")) +
+ggplot(df2, aes(x = fecha)) +
+  geom_line(aes(y = abs((trab-SMA(trab, n=5))/(SMA(trab, n=5)))*100, color = "Variacion Porcentual del Trabajo")) +
+  geom_line(aes(y = mean(abs((trab-SMA(trab, n=5))/(SMA(trab, n=5)))*100, na.rm = T), color = "Promedio de la Media Movil")) +
   scale_color_manual(values = c("Variacion Porcentual del Trabajo" = "violetred3",
                                 "Promedio de la Media Movil" = "green3")) +
   labs(title = "Variacion Porcentual del Trabajo con respecto a su Media Movil (Periodo 1992-2022)",
@@ -215,9 +190,9 @@ ggplot(am_data, aes(x = fecha)) +
        color = "Referencia") + 
   theme_minimal()
 # Precipitacion
-ggplot(am_data, aes(x = fecha)) +
-  geom_line(aes(y = prec_cambio, color = "Variacion Porcentual de la Precipitacion")) +
-  geom_line(aes(y = mean(prec_cambio, na.rm = T), color = "Promedio de la Media Movil")) +
+ggplot(df2, aes(x = fecha)) +
+  geom_line(aes(y = abs((prec-SMA(prec, n=5))/(SMA(prec, n=5)))*100, color = "Variacion Porcentual de la Precipitacion")) +
+  geom_line(aes(y = mean(abs((prec-SMA(prec, n=5))/(SMA(prec, n=5)))*100, na.rm = T), color = "Promedio de la Media Movil")) +
   scale_color_manual(values = c("Variacion Porcentual de la Precipitacion" = "violetred3",
                                 "Promedio de la Media Movil" = "green3")) +
   labs(title = "Variacion Porcentual de la Precipitacion con respecto a su Media Movil (Periodo 1992-2022)",
@@ -226,9 +201,9 @@ ggplot(am_data, aes(x = fecha)) +
        color = "Referencia") + 
   theme_minimal()
 # Temperatura
-ggplot(am_data, aes(x = fecha)) +
-  geom_line(aes(y = temp_cambio, color = "Variacion Porcentual de la Temperatura")) +
-  geom_line(aes(y = mean(temp_cambio, na.rm = T), color = "Promedio de la Media Movil")) +
+ggplot(df2, aes(x = fecha)) +
+  geom_line(aes(y = abs((temp-SMA(temp, n=5))/(SMA(temp, n=5)))*100, color = "Variacion Porcentual de la Temperatura")) +
+  geom_line(aes(y = mean(abs((temp-SMA(temp, n=5))/(SMA(temp, n=5)))*100, na.rm = T), color = "Promedio de la Media Movil")) +
   scale_color_manual(values = c("Variacion Porcentual de la Temperatura" = "violetred3",
                                 "Promedio de la Media Movil" = "green3")) +
   labs(title = "Variacion Porcentual de la Temperatura con respecto a su Media Movil (Periodo 1992-2022)",
@@ -239,71 +214,114 @@ ggplot(am_data, aes(x = fecha)) +
 # Graficos del Comportamiento de las Variables/Dimensiones y sus Desviaciones
 # Estandar Moviles para observar la Volatilidad
 # Produccion
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = prod, color = "Producción")) +
   geom_line(aes(y = runSD(prod, 5), color = "Volatilidad")) +
-  scale_color_manual(values = c("Producción" = "darkblue", 
-                                "Volatilidad" = "gold4")) +
+  scale_color_manual(values = c("Producción" = "darkblue","Volatilidad" = "gold4")) +
   labs(title = "Producción de Fibra de Alpaca y su Volatilidad (Periodo 1992-2022)",
        x = "Periodo",
        y = "Producción (t)",
        color = "Referencia") + 
   theme_minimal()
 # Naturaleza
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = nat, color = "Naturaleza")) +
   geom_line(aes(y = runSD(nat, 5), color = "Volatilidad")) +
-  scale_color_manual(values = c("Naturaleza" = "darkblue", 
-                                "Volatilidad" = "gold4")) +
+  scale_color_manual(values = c("Naturaleza" = "darkblue","Volatilidad" = "gold4")) +
   labs(title = "La Naturaleza y su Volatilidad (Periodo 1992-2022)",
        x = "Periodo",
        y = "Naturaleza (Mha)",
        color = "Referencia") + 
   theme_minimal()
 # Capital
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = cap, color = "Capital")) +
   geom_line(aes(y = runSD(cap, 5), color = "Volatilidad")) +
-  scale_color_manual(values = c("Capital" = "darkblue", 
-                                "Volatilidad" = "gold4")) +
+  scale_color_manual(values = c("Capital" = "darkblue","Volatilidad" = "gold4")) +
   labs(title = "El Capital y su Volatilidad (Periodo 1992-2022)",
        x = "Periodo",
        y = "Capital (M)",
        color = "Referencia") + 
   theme_minimal()
 # Trabajo
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = trab, color = "Trabajo")) +
   geom_line(aes(y = runSD(trab, 5), color = "Volatilidad")) +
-  scale_color_manual(values = c("Trabajo" = "darkblue", 
-                                "Volatilidad" = "gold4")) +
+  scale_color_manual(values = c("Trabajo" = "darkblue","Volatilidad" = "gold4")) +
   labs(title = "El Trabajo y su Volatilidad (Periodo 1992-2022)",
        x = "Periodo",
        y = "Trabajo (M)",
        color = "Referencia") + 
   theme_minimal()
 # Precipitacion
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = prec, color = "Precipitacion")) +
   geom_line(aes(y = runSD(prec, 5), color = "Volatilidad")) +
-  scale_color_manual(values = c("Precipitacion" = "darkblue", 
-                                "Volatilidad" = "gold4")) +
+  scale_color_manual(values = c("Precipitacion" = "darkblue","Volatilidad" = "gold4")) +
   labs(title = "La Precipitacion y su Volatilidad (Periodo 1992-2022)",
        x = "Periodo",
        y = "Precipitacion (mm)",
        color = "Referencia") + 
   theme_minimal()
 # Temperatura
-ggplot(am_data, aes(x = fecha)) +
+ggplot(df2, aes(x = fecha)) +
   geom_line(aes(y = temp, color = "Temperatura")) +
   geom_line(aes(y = runSD(temp, 5), color = "Volatilidad")) +
-  scale_color_manual(values = c("Temperatura" = "darkblue", 
-                                "Volatilidad" = "gold4")) +
+  scale_color_manual(values = c("Temperatura" = "darkblue","Volatilidad" = "gold4")) +
   labs(title = "La Temperatura y su Volatilidad (Periodo 1992-2022)",
        x = "Periodo",
        y = "Temperatura (°C)",
        color = "Referencia") + 
   theme_minimal()
+# Autocorrelacion y Autocorrelacion Parcial de las Variables/Dimensiones
+# Produccion
+dfp <- ts(df["Produccion (t)"], start=1992, end=2022, frequency=1)
+par(mfrow=c(1,2))
+plot(acf(dfp,plot=F), xlab="Rezagos", main="Funcion de Autocorrelacion de la Produccion",
+     ci.col="seagreen4")
+plot(pacf(dfp,plot=F), xlab="Rezagos", ylab="PACF", main="Funcion de Autocorrelacion Parcial de la Produccion",
+     ci.col="darkorchid4")
+par(mfrow=c(1,1))
+# Naturaleza
+dfn <- ts(df["Naturaleza (Mha)"], start=1992, end=2022, frequency=1)
+par(mfrow=c(1,2))
+plot(acf(dfn,plot=F), xlab="Rezagos", main="Funcion de Autocorrelacion de la Naturaleza",
+     ci.col="seagreen4")
+plot(pacf(dfn,plot=F), xlab="Rezagos", ylab="PACF", main="Funcion de Autocorrelacion Parcial de la Naturaleza",
+     ci.col="darkorchid4")
+par(mfrow=c(1,1))
+# Capital
+dfc <- ts(df["Capital (M)"], start=1992, end=2022, frequency=1)
+par(mfrow=c(1,2))
+plot(acf(dfc,plot=F), xlab="Rezagos", main="Funcion de Autocorrelacion del Capital",
+     ci.col="seagreen4")
+plot(pacf(dfc,plot=F), xlab="Rezagos", ylab="PACF", main="Funcion de Autocorrelacion Parcial del Capital",
+     ci.col="darkorchid4")
+par(mfrow=c(1,1))
+# Trabajo
+dft <- ts(df["Trabajo (M)"], start=1992, end=2022, frequency=1)
+par(mfrow=c(1,2))
+plot(acf(dft,plot=F), xlab="Rezagos", main="Funcion de Autocorrelacion del Trabajo",
+     ci.col="seagreen4")
+plot(pacf(dft,plot=F), xlab="Rezagos", ylab="PACF", main="Funcion de Autocorrelacion Parcial del Trabajo",
+     ci.col="darkorchid4")
+par(mfrow=c(1,1))
+# Precipitacion
+dfpr <- ts(df["Precipitacion (mm)"], start=1992, end=2022, frequency=1)
+par(mfrow=c(1,2))
+plot(acf(dfpr,plot=F), xlab="Rezagos", main="Funcion de Autocorrelacion de la Precipitacion",
+     ci.col="seagreen4")
+plot(pacf(dfpr,plot=F), xlab="Rezagos", ylab="PACF", main="Funcion de Autocorrelacion Parcial de la Precipitacion",
+     ci.col="darkorchid4")
+par(mfrow=c(1,1))
+# Temperatura
+dftm <- ts(df["Temperatura (°C)"], start=1992, end=2022, frequency=1)
+par(mfrow=c(1,2))
+plot(acf(dftm,plot=F), xlab="Rezagos", main="Funcion de Autocorrelacion de la Temperatura",
+     ci.col="seagreen4")
+plot(pacf(dftm,plot=F), xlab="Rezagos", ylab="PACF", main="Funcion de Autocorrelacion Parcial de la Temperatura",
+     ci.col="darkorchid4")
+par(mfrow=c(1,1))
 # Correlacion entre variables
 chart.Correlation(df, main="Correlacion de las Variables/Dimensiones")
 
