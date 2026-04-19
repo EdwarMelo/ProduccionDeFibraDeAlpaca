@@ -33,10 +33,19 @@ datos <- read.csv(
   colClasses = c("character", rep("numeric", 6)))
 
 #### Estadisticos Descriptivos ####
-summary(datos)
-sapply(datos[,-1], var)
-sapply(datos[,-1], sd)
+estadisticos <- data.frame(
+  Media  = sapply(datos[,-1], mean),
+  Mediana= sapply(datos[,-1], median),
+  SD     = sapply(datos[,-1], sd),
+  Var    = sapply(datos[,-1], var),
+  Min    = sapply(datos[,-1], min),
+  Max    = sapply(datos[,-1], max),
+  CV     = sapply(datos[,-1], function(x) (sd(x) / mean(x)) * 100)
+) %>% round(3)
 
+print(estadisticos)
+
+# Generacion de dataframe
 df1 <- datos %>%
   rename("Periodo (A)"      = 1, "Produccion (t)"    = 2,
          "Naturaleza (Mha)" = 3, "Capital (M)"       = 4,
@@ -48,9 +57,11 @@ tema_base <- theme_minimal(base_size = 12) +
   theme(
     plot.title        = element_text(hjust = 0.5, face = "bold",
                                      size = 14, color = col_oscuro),
-    plot.subtitle     = element_text(hjust = 0.5, color = col_neutro, size = 11),
+    plot.subtitle     = element_text(hjust = 0.5, color = col_neutro, 
+                                     size = 11),
     plot.caption      = element_text(color = col_neutro, size = 9),
-    strip.text        = element_text(face = "bold", size = 11, color = col_oscuro),
+    strip.text        = element_text(face = "bold", size = 11, 
+                                     color = col_oscuro),
     strip.background  = element_rect(fill = col_claro, color = NA),
     panel.grid.minor  = element_blank(),
     panel.grid.major  = element_line(linetype = "dotted", color = "#E0D5C8"),
@@ -79,7 +90,7 @@ ggplot(datos_largo, aes(x = `Periodo (A)`, y = valor)) +
              fill = col_claro, stroke = 0.8) +
   facet_wrap(~ variable, scales = "free_y", ncol = 2) +
   scale_x_continuous(breaks = seq(1992, 2022, by = 6)) +
-  labs(title = "Comportamiento Temporal de la Producción y sus Factores Productivos",
+  labs(title = "Comportamiento Temporal de la Producción, sus Factores Productivos y los Factores Exogenos de Cambio Climatico",
        y = NULL, x = NULL) +
   tema_base +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -106,8 +117,10 @@ grafico_serie <- function(data, var, etiqueta_y, titulo,
                   label = round(.data[[var]], decimales)),
               vjust = -0.8, size = 3, color = col_oscuro,
               check_overlap = TRUE) +
-    scale_color_manual(values = c(col_primario, col_secundario, col_neutro) %>%
-                         setNames(c(etiqueta_y, "Media Móvil", "Volatilidad"))) +
+    scale_color_manual(values = c(col_primario, col_secundario, 
+                                  col_neutro) %>%
+                         setNames(c(etiqueta_y, "Media Móvil", 
+                                    "Volatilidad"))) +
     scale_x_date(date_breaks = "1 year", date_labels = "%Y",
                  limits = c(as.Date("1991-10-31"), as.Date("2022-08-31")),
                  expand = expansion(mult = 0.01)) +
@@ -151,7 +164,8 @@ grafico_serie <- function(data, var, etiqueta_y, titulo,
       theme = theme(
         plot.title    = element_text(hjust = 0.5, face = "bold",
                                      size = 14, color = col_oscuro),
-        plot.subtitle = element_text(hjust = 0.5, color = col_neutro, size = 10)
+        plot.subtitle = element_text(hjust = 0.5, color = col_neutro, 
+                                     size = 10)
       )) +
     plot_layout(heights = c(3, 1))
 }
@@ -230,7 +244,8 @@ grafico_dist <- function(data, var, etiqueta_x, titulo) {
       theme = theme(
         plot.title    = element_text(hjust = 0.5, face = "bold",
                                      size = 14, color = col_oscuro),
-        plot.subtitle = element_text(hjust = 0.5, color = col_neutro, size = 10)
+        plot.subtitle = element_text(hjust = 0.5, color = col_neutro, 
+                                     size = 10)
       )) +
     plot_layout(heights = c(2, 1))
 }
@@ -255,20 +270,19 @@ grafico_dist(df2, "temp", "Temperatura (°C)",
              "Distribución de la Temperatura (1992–2022)")
 
 #### Funciones de Autocorrelación ACF / PACF ####
-tema_acf <- list(
-  theme_minimal(base_size = 12),
+tema_acf <- theme_minimal(base_size = 12) +
   theme(
-    plot.title   = element_text(hjust = 0.5, face = "bold",
-                                size = 12, color = col_oscuro),
-    axis.line    = element_line(color = col_neutro, linewidth = 0.4),
-    axis.text    = element_text(color = col_neutro),
-    axis.title   = element_text(color = col_oscuro, size = 11),
+    plot.title       = element_text(hjust = 0.5, face = "bold",
+                                    size = 12, color = col_oscuro),
+    axis.line        = element_line(color = col_neutro, linewidth = 0.4),
+    axis.text        = element_text(color = col_neutro),
+    axis.title       = element_text(color = col_oscuro, size = 11),
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(linetype = "dotted", color = "#E0D5C8")
   )
-)
 
 grafico_acf <- function(serie_ts, nombre, intervalo) {
+  
   g_acf <- ggAcf(serie_ts, ci = 0) +
     geom_segment(lineend = "round", color = col_primario, linewidth = 1) +
     geom_hline(yintercept =  intervalo, linetype = "dashed",
@@ -296,34 +310,39 @@ grafico_acf <- function(serie_ts, nombre, intervalo) {
              fill = col_secundario, alpha = 0.08) +
     scale_y_continuous(limits = c(-1, 1),
                        breaks = seq(-1, 1, by = 0.25)) +
-    labs(title = "Autocorrelación Parcial (PACF)", x = "Rezagos", y = "PACF") +
+    labs(title = "Autocorrelación Parcial (PACF)", x = "Rezagos", 
+         y = "PACF") +
     tema_acf
   
   g_acf / g_pacf +
     plot_annotation(
-      title    = paste0("Función de Autocorrelación · ", nombre, " (1992–2022)"),
-      caption  = "Bandas de confianza al 95% — zona sombreada: no significancia",
-      theme = theme(
+      title   = paste0("Función de Autocorrelación y Autocorrelacion Parcial · ", nombre, " (1992–2022)"),
+      caption = "Bandas de confianza al 95%  ·  Zona sombreada: no significancia",
+      theme   = theme(
         plot.title   = element_text(hjust = 0.5, face = "bold",
                                     size = 14, color = col_oscuro),
         plot.caption = element_text(color = col_neutro, size = 9, hjust = 0.5)
-      )) +
-    plot_layout(heights = c(1, 1))
+      ))
 }
 
-# Calcular series e intervalos
 vars_acf <- list(
-  list(ts(df1["Produccion (t)"],     start=1992, end=2022, frequency=1), "Producción"),
-  list(ts(df1["Naturaleza (Mha)"],   start=1992, end=2022, frequency=1), "Naturaleza"),
-  list(ts(df1["Capital (M)"],        start=1992, end=2022, frequency=1), "Capital"),
-  list(ts(df1["Trabajo (M)"],        start=1992, end=2022, frequency=1), "Trabajo"),
-  list(ts(df1["Precipitacion (mm)"], start=1992, end=2022, frequency=1), "Precipitación"),
-  list(ts(df1["Temperatura (°C)"],   start=1992, end=2022, frequency=1), "Temperatura")
+  list(ts(df1[["Produccion (t)"]],     start = 1992, end = 2022, 
+          frequency = 1), "Producción"),
+  list(ts(df1[["Naturaleza (Mha)"]],   start = 1992, end = 2022, 
+          frequency = 1), "Naturaleza"),
+  list(ts(df1[["Capital (M)"]],        start = 1992, end = 2022, 
+          frequency = 1), "Capital"),
+  list(ts(df1[["Trabajo (M)"]],        start = 1992, end = 2022, 
+          frequency = 1), "Trabajo"),
+  list(ts(df1[["Precipitacion (mm)"]], start = 1992, end = 2022, 
+          frequency = 1), "Precipitación"),
+  list(ts(df1[["Temperatura (°C)"]],   start = 1992, end = 2022, 
+          frequency = 1), "Temperatura")
 )
 
 for (v in vars_acf) {
   intervalo <- 1.96 / sqrt(length(v[[1]]))
-  grafico_acf(v[[1]], v[[2]], intervalo)
+  print(grafico_acf(v[[1]], v[[2]], intervalo))
 }
 
 #### Correlación entre variables ####
@@ -343,14 +362,16 @@ CDmodel1 <- dynlm(lnProduccion ~ lnNaturaleza + lnCapital + lnTrabajo +
                     lnPrecipitacion + lnTemperatura, data = tsdata)
 
 CDmodel2 <- dynlm(lnProduccion ~ lnNaturaleza + lnCapital + lnTrabajo +
-                    lnPrecipitacion + lnTemperatura + trend(tsdata), data = tsdata)
+                    lnPrecipitacion + lnTemperatura + trend(tsdata), 
+                  data = tsdata)
 
 stargazer(CDmodel1, CDmodel2, type = "text",
           title         = "Modelos Cobb-Douglas — Producción de Fibra de Alpaca",
           column.labels = c("Sin tendencia", "Con tendencia"),
           dep.var.label = "ln(Producción)",
-          covariate.labels = c("ln(Naturaleza)", "ln(Capital)", "ln(Trabajo)",
-                               "ln(Precipitación)", "ln(Temperatura)", "Tendencia"),
+          covariate.labels = c("ln(Naturaleza)", "ln(Capital)", 
+                               "ln(Trabajo)", "ln(Precipitación)", 
+                               "ln(Temperatura)", "Tendencia"),
           digits       = 3,
           star.cutoffs = c(0.1, 0.05, 0.01),
           add.lines    = list(
@@ -425,9 +446,9 @@ stargazer(mce1, mce2, type = "text",
           title         = "Modelo de Corrección de Errores (MCE)",
           column.labels = c("MCE con tendencia", "MCE sin tendencia"),
           dep.var.label = "Δln(Producción)",
-          covariate.labels = c("Δln(Naturaleza)", "Δln(Capital)", "Δln(Trabajo)",
-                               "Δln(Precipitación)", "ln(Temperatura)",
-                               "ECT (−1)", "Tendencia"),
+          covariate.labels = c("Δln(Naturaleza)", "Δln(Capital)", 
+                               "Δln(Trabajo)", "Δln(Precipitación)", 
+                               "ln(Temperatura)", "ECT (−1)", "Tendencia"),
           digits       = 4,
           star.cutoffs = c(0.1, 0.05, 0.01),
           add.lines    = list(
@@ -440,5 +461,6 @@ cat(" Mecanismo de Corrección de Errores (ECT)\n")
 cat("══════════════════════════════════════════\n")
 cat(" Coeficiente ECT :", round(ect["Estimate"],   4), "\n")
 cat(" p-valor         :", round(ect["Pr(>|t|)"],   4), "\n")
-cat(" Velocidad ajuste:", abs(round(ect["Estimate"] * 100, 1)), "% por año\n")
+cat(" Velocidad ajuste:", abs(round(ect["Estimate"] * 100, 1)), 
+    "% por año\n")
 cat("══════════════════════════════════════════\n")
